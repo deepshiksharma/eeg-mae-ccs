@@ -1,1 +1,1 @@
-# eeg-mae-ccs
+# Masked Autoencoder for Electroencephalogram (EEG) Signals
