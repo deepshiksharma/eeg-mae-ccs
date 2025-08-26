@@ -1,68 +1,37 @@
-import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
 from models.masked_autoencoder import EEG_MAE
-import matplotlib.pyplot as plt
+from dataset_utils import create_dataloaders
+from utils import save_checkpoint
 
-def save_checkpoint(model, optimizer, epoch, loss, path):
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'epoch': epoch,
-        'loss': loss
-    }, path)
-
-def split_dataset(data, labels=None, val_size=0.1, seed=42):
-    idx_train, idx_val = train_test_split(
-        np.arange(len(data)),
-        test_size=val_size,
-        random_state=seed,
-        stratify=labels if labels is not None else None
-    )
-    return idx_train, idx_val
+import yaml
+with open("config.yaml") as f:
+    config = yaml.safe_load(f)
+config = config['pretrain']
 
 
-class EEGDataset(Dataset):
-    def __init__(self, data, labels=None):
-        # data: np.array (N, C, T)
-        self.data = data
-        self.labels = labels
+train_loader, val_loader = create_dataloaders(
+    config['data_dir'],
+    batch_size = config['batch_size'],
+    val_size = 0.1
+)
 
-    def __len__(self):
-        return len(self.data)
+num_channels = 0
+seq_len = 0
 
-    def __getitem__(self, idx):
-        x = torch.tensor(self.data[idx], dtype=torch.float32)
-        if self.labels is not None:
-            y = torch.tensor(self.labels[idx], dtype=torch.long)
-            return x, y
-        return x
-
-
-data = np.load('eeg_data.npy')  # prototype shape: (N, 64, 2000)  actual shape of data: (N, 59, 2000)
-idx_train, idx_val = split_dataset(data)
-
-train_dataset = EEGDataset(data[idx_train])
-val_dataset = EEGDataset(data[idx_val])
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=64)
-
-
-model = EEG_MAE(num_channels=59)
+model = EEG_MAE(num_channels=num_channels, T=seq_len)
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print("using device:", device, end="\n\n")
+print(device)
 model.to(device)
 
 
 # Training loop
-epochs = 300
+num_epochs = config['train_epochs']
 
 Train_Loss, Val_Loss = [], []
 
-for epoch in range(epochs):
+for epoch in range(num_epochs):
     model.train()
     total_loss = 0
     for x in train_loader:
