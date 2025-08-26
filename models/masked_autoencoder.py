@@ -14,7 +14,7 @@ class PatchEmbed(nn.Module):
         x = self.proj(x)        # (B, embed_dim, N)
         x = x.permute(0, 2, 1)  # (B, N, embed_dim)
         return x
-    
+
 
 class MAE_Encoder(nn.Module):
     def __init__(self, embed_dim, depth, nhead, ff_dim):
@@ -55,7 +55,7 @@ class MAE_Decoder(nn.Module):
 
 class EEG_MAE(nn.Module):
     def __init__(self, num_channels=64, patch_size=100, embed_dim=128, encoder_depth=6,
-                 decoder_dim=64, decoder_depth=4, nhead=4, ff_dim=256, mask_ratio=0.5, T=32):
+                 decoder_dim=64, decoder_depth=4, nhead=4, ff_dim=256, mask_ratio=0.5, seq_len=32):
         super().__init__()
         self.patch_embed = PatchEmbed(num_channels, patch_size, embed_dim)
         self.encoder = MAE_Encoder(embed_dim, encoder_depth, nhead, ff_dim)
@@ -71,11 +71,11 @@ class EEG_MAE(nn.Module):
             # num_patches = T / patch_size
             # (where T is the length of each EEG segment)
             #             = 2000 / 100 = 20
-        num_patches = T // patch_size
+        num_patches = seq_len // patch_size
 
-        print("seq len T:", T)
-        print("patch size:", patch_size)
-        print("num_patches:", num_patches)
+        print(f"\nseq_len:\t{seq_len}")
+        print(f"patch_size:\t{patch_size}")
+        print(f"num_patches:\t{num_patches}\n")
         
         self.pos_embed_enc = nn.Parameter(torch.randn(1, num_patches, embed_dim))
         self.pos_embed_dec = nn.Parameter(torch.randn(1, num_patches, embed_dim))
