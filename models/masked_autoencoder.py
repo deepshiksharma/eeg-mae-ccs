@@ -54,8 +54,8 @@ class MAE_Decoder(nn.Module):
 
 
 class EEG_MAE(nn.Module):
-    def __init__(self, num_channels=64, patch_size=100, embed_dim=128, encoder_depth=6,
-                 decoder_dim=64, decoder_depth=4, nhead=4, ff_dim=256, mask_ratio=0.5, T=32):
+    def __init__(self, num_channels=None, patch_size=100, embed_dim=128, encoder_depth=6,
+                 decoder_dim=64, decoder_depth=4, nhead=4, ff_dim=256, mask_ratio=0.5, T=None):
         super().__init__()
         self.patch_embed = PatchEmbed(num_channels, patch_size, embed_dim)
         self.encoder = MAE_Encoder(embed_dim, encoder_depth, nhead, ff_dim)
