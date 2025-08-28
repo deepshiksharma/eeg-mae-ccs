@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader, Subset
 from sklearn.model_selection import train_test_split
 
 
-class EEGDataset(Dataset):
+class LazyLoaderEEG(Dataset):
     """ Memory-efficient EEG data loading for huge .npy files. """
     
     def __init__(self, data_dir, labels=None):
@@ -73,7 +73,7 @@ def split_indices(dataset, val_size=0.1, test_size=None, labels=None, seed=25):
 
 
 def create_dataloaders(data_dir, labels=None, batch_size=64, val_size=None, test_size=None, seed=25):
-    dataset = EEGDataset(data_dir, labels=labels)
+    dataset = LazyLoaderEEG(data_dir, labels=labels)
     
     split = split_indices(dataset, val_size=val_size, test_size=test_size, labels=labels, seed=seed)
 

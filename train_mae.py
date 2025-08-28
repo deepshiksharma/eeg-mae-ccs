@@ -13,8 +13,9 @@ config = config['pretrain']
 train_loader, val_loader = create_dataloaders(
     config['data_dir'],
     batch_size = config['batch_size'],
-    val_size = 0.1
+    val_size = config['validation_split_size']
 )
+
 
 num_channels = 0
 seq_len = 0
